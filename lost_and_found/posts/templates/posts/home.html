@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost and Found</title>
+</head>
+<body>
+    <h1>Lost and Found</h1>
+    {% if user.is_authenticated %}
+        <p>Welcome, {{ user.username }}! <a href="{% url 'logout' %}">Logout</a></p>
+        <a href="{% url 'create_post' %}">Create a new post</a>
+    {% else %}
+        <a href="{% url 'login' %}">Login</a>
+    {% endif %}
+    <ul>
+        {% for post in posts %}
+            <li>
+                <h2><a href="{% url 'post_detail' post.id %}">{{ post.title }}</a></h2>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
