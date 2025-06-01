@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost and Found</title>
+    <style>
+        .post-box {
+            display: inline-block;
+            min-width: 10ch;               /* 최소 너비: 10글자 */
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+
+        .post-title {
+            font-size: 18px;
+            margin: 0;
+            word-wrap: break-word;         /* 너무 긴 단어는 줄바꿈 */
+        }
+
+        .post-author {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lost and Found</h1>
+    {% if user.is_authenticated %}
+        <p>Welcome, {{ user.username }}! <a href="{% url 'logout' %}">Logout</a></p>
+        <a href="{% url 'create_post' %}">Create a new post</a>
+    {% else %}
+        <a href="{% url 'login' %}">Login</a>
+    {% endif %}
+
+    <ul style="list-style-type: none; padding: 0;">
+        {% for post in posts %}
+            <li>
+                <div class="post-box">
+                    <h2 class="post-title">
+                        <a href="{% url 'post_detail' post.id %}">{{ post.title }}</a>
+                    </h2>
+                    <p class="post-author">by {{ post.author.username }}</p>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

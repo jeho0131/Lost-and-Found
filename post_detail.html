@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+    <style>
+        .title-box {
+            display: inline-block;
+            min-width: 10ch;      /* 최소 10글자 너비 */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 6px 10px;
+            background-color: #f9f9f9;
+        }
+        .title-text {
+            margin: 0;
+            font-size: 20px;
+            display: inline;
+        }
+        .resolve-label {
+            font-size: 12px;
+            margin-left: 4px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- 제목 + (글쓴이 전용) 체크박스 -->
+    <div class="title-box">
+        <h1 class="title-text">{{ post.title }}</h1>
+        {% if user == post.author %}
+            <input type="checkbox" class="resolve-checkbox" data-post-id="{{ post.id }}">
+            <span class="resolve-label">해결됨 표시</span>
+        {% endif %}
+    </div>
+
+    <p>{{ post.description }}</p>
+
+    {% if post.image %}
+        <img src="{{ post.image.url }}" alt="Image" style="max-width: 500px;">
+    {% endif %}
+
+    <h3>Comments</h3>
+    <ul>
+        {% for comment in comments %}
+            <li>{{ comment.user.username }}: {{ comment.content }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if user.is_authenticated %}
+        <form method="POST">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit">Add Comment</button>
+        </form>
+    {% else %}
+        <p>You must be logged in to comment.</p>
+    {% endif %}
+
+    <!-- 체크박스 클릭 시 사용자 선택 및 확인 기능 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const csrfToken = '{{ csrf_token }}';
+        document.querySelectorAll('.resolve-checkbox').forEach(cb => {
+            cb.addEventListener('change', async (e) => {
+                if (!e.target.checked) return;
+
+                const postId = e.target.dataset.postId;
+                const username = prompt("문제를 해결한 사용자 아이디를 입력하세요:");
+                if (!username) {
+                    e.target.checked = false;
+                    return;
+                }
+
+                const confirmSend = confirm(`'${username}'을(를) 선택한 사용자로 관리자에게 알리시겠습니까?`);
+                if (!confirmSend) {
+                    e.target.checked = false;
+                    return;
+                }
+
+                const res = await fetch(`/resolve/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username })
+                });
+
+                if (res.ok) {
+                    alert("관리자에게 성공적으로 전송되었습니다.");
+                } else {
+                    alert("오류가 발생했습니다.");
+                    e.target.checked = false;
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>
